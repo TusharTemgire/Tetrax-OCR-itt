@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+.DS_Store
+
+# Data & cache
+datasets/raw/*
+datasets/lines/*
+datasets/synthetic/*
+datasets/predictions*.csv
+datasets/external/*
+
+# Models & outputs
+models/checkpoints/*
+output/
+vendor/
