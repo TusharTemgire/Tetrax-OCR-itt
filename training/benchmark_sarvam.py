@@ -36,7 +36,22 @@ def main():
     parser.add_argument("--split", default="small_representative", choices=["small_representative", "test"])
     parser.add_argument("--languages", default="hindi,english", help="Comma-separated languages to evaluate")
     parser.add_argument("--max-samples", type=int, default=50, help="Number of samples to evaluate")
+    parser.add_argument("--rec-model-dir", default=None, help="Path to fine-tuned exported PaddleOCR inference model")
+    parser.add_argument("--rec-char-dict-path", default=None, help="Path to character dictionary")
+    parser.add_argument("--trocr-checkpoint", default=None, help="Path to fine-tuned TrOCR checkpoint")
     args = parser.parse_args()
+
+    trocr_processor = None
+    trocr_model = None
+    if args.trocr_checkpoint:
+        import torch
+        from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+        print(f"Loading fine-tuned TrOCR checkpoint: {args.trocr_checkpoint}...")
+        trocr_processor = TrOCRProcessor.from_pretrained(args.trocr_checkpoint)
+        trocr_model = VisionEncoderDecoderModel.from_pretrained(args.trocr_checkpoint)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        trocr_model.to(device)
+        trocr_model.eval()
 
     from datasets import load_dataset
     print(f"Loading '{args.split}' from 'sarvamai/indic-ocr-bench'...")
@@ -61,11 +76,24 @@ def main():
         paddle_lang = LANG_CODE_MAP.get(lang, "en")
 
         try:
-            import numpy as np
-            import cv2
-            img_bgr = cv2.cvtColor(np.array(pil_img.convert("RGB")), cv2.COLOR_RGB2BGR)
-            res = extract_image(img_bgr, lang=paddle_lang, apply_preprocessing=True)
-            pred = normalize(res["text"].replace("\n", " "))
+            if trocr_model is not None and trocr_processor is not None:
+                img_rgb = pil_img.convert("RGB")
+                pixel_values = trocr_processor(img_rgb, return_tensors="pt").pixel_values.to(trocr_model.device)
+                with torch.no_grad():
+                    gen_ids = trocr_model.generate(pixel_values, max_new_tokens=128)
+                pred = normalize(trocr_processor.batch_decode(gen_ids, skip_special_tokens=True)[0])
+            else:
+                import numpy as np
+                import cv2
+                img_bgr = cv2.cvtColor(np.array(pil_img.convert("RGB")), cv2.COLOR_RGB2BGR)
+                res = extract_image(
+                    img_bgr,
+                    lang=paddle_lang,
+                    apply_preprocessing=True,
+                    rec_model_dir=args.rec_model_dir,
+                    rec_char_dict_path=args.rec_char_dict_path,
+                )
+                pred = normalize(res["text"].replace("\n", " "))
         except Exception as e:
             pred = ""
 

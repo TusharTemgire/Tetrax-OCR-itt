@@ -33,10 +33,15 @@ def is_gpu_requested() -> bool:
     return val in ("1", "true", "yes", "on")
 
 @lru_cache(maxsize=16)
-def get_engine(lang: str, use_gpu: Optional[bool] = None):
+def get_engine(
+    lang: str,
+    use_gpu: Optional[bool] = None,
+    rec_model_dir: Optional[str] = None,
+    rec_char_dict_path: Optional[str] = None,
+):
     """
     Initializes and caches the PaddleOCR engine for the specified language.
-    Downloads models on first call for the specific script.
+    If rec_model_dir and rec_char_dict_path are provided, loads custom fine-tuned weights.
     """
     if lang not in SUPPORTED_LANGS:
         raise ValueError(
@@ -44,6 +49,11 @@ def get_engine(lang: str, use_gpu: Optional[bool] = None):
         )
     if use_gpu is None:
         use_gpu = is_gpu_requested()
+
+    if rec_model_dir is None:
+        rec_model_dir = os.getenv("TETRAX_REC_MODEL_DIR")
+    if rec_char_dict_path is None:
+        rec_char_dict_path = os.getenv("TETRAX_REC_CHAR_DICT_PATH")
 
     try:
         from paddleocr import PaddleOCR
@@ -54,15 +64,21 @@ def get_engine(lang: str, use_gpu: Optional[bool] = None):
             "Please run 'pip install paddleocr paddlepaddle'."
         ) from e
 
+    kwargs = {
+        "use_angle_cls": True,
+        "lang": lang,
+        "use_gpu": use_gpu,
+        "show_log": False,
+    }
+    if rec_model_dir and os.path.exists(rec_model_dir):
+        kwargs["rec_model_dir"] = rec_model_dir
+    if rec_char_dict_path and os.path.exists(rec_char_dict_path):
+        kwargs["rec_char_dict_path"] = rec_char_dict_path
+
     # Initialize PaddleOCR engine with angle classifier for rotated Indian documents
     try:
         # Standard PaddleOCR 2.x / 3.x API
-        return PaddleOCR(
-            use_angle_cls=True,
-            lang=lang,
-            use_gpu=use_gpu,
-            show_log=False
-        )
+        return PaddleOCR(**kwargs)
     except TypeError:
         # Newer v3.x PaddleX configuration fallback
         return PaddleOCR(
@@ -148,7 +164,9 @@ def _parse_predict_result(result: Any) -> List[dict]:
 def extract_image(
     image_input: Union[str, np.ndarray],
     lang: str = "en",
-    apply_preprocessing: bool = True
+    apply_preprocessing: bool = True,
+    rec_model_dir: Optional[str] = None,
+    rec_char_dict_path: Optional[str] = None,
 ) -> dict:
     """
     Extracts text from an image using PaddleOCR Option A.
@@ -166,7 +184,7 @@ def extract_image(
         else:
             processed_img = image_input
 
-    engine = get_engine(lang)
+    engine = get_engine(lang, rec_model_dir=rec_model_dir, rec_char_dict_path=rec_char_dict_path)
 
     lines: List[dict] = []
     # 1. Try standard ocr(img, cls=True)
