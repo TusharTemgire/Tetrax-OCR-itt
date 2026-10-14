@@ -57,14 +57,14 @@ Clone your Tetrax OCR repository into Colab (or open [`Tetrax_OCR_Colab_Training
 Extract images, split train/val/test partitions, and generate character dictionaries for Indian languages and English:
 
 ```bash
-# Option A: Fast test run on Hindi and English (small_representative split)
+# Complete dataset run: All 6,909 images across all 22 Indian languages + English
 !python -m training.load_sarvam_dataset \
-  --split small_representative \
-  --languages hindi,english \
+  --split test \
+  --languages all \
   --output-dir datasets/sarvam_indic
 
-# Option B: Or load all 22 Indian languages:
-# !python -m training.load_sarvam_dataset --split small_representative --languages all --output-dir datasets/sarvam_indic
+# (Alternative: Fast dry run on Hindi and English only)
+# !python -m training.load_sarvam_dataset --split small_representative --languages hindi,english --output-dir datasets/sarvam_indic
 ```
 
 Verify the dataset layout in Colab:

@@ -42,13 +42,15 @@ def main():
     print(f"Loading '{args.split}' from 'sarvamai/indic-ocr-bench'...")
     ds = load_dataset("sarvamai/indic-ocr-bench", split=args.split)
 
-    target_langs = {l.strip().lower() for l in args.languages.split(",")}
+    target_langs = None
+    if args.languages.strip().lower() != "all":
+        target_langs = {l.strip().lower() for l in args.languages.split(",")}
     results_by_lang = collections.defaultdict(lambda: {"refs": [], "preds": []})
 
     count = 0
     for item in tqdm(ds, desc="Evaluating"):
         lang = str(item.get("language", "")).lower()
-        if lang not in target_langs:
+        if target_langs is not None and lang not in target_langs:
             continue
 
         ref = normalize(str(item.get("gt", "")))
