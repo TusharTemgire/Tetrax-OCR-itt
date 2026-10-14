@@ -1,11 +1,11 @@
 # Tetrax OCR — Option A (PaddleOCR) & Indian Document Training Starter
 
-A high-performance OCR service and fine-tuning starter for document images and multi-page PDFs, specialized in **English and Indian documents** (invoices, receipts, tax forms, IDs, and books) based on [`doc.md`](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/doc.md).
+A high-performance OCR service and fine-tuning starter for document images and multi-page PDFs, specialized in **English and Indian documents** (invoices, receipts, tax forms, IDs, and books) based on [`doc.md`](doc.md).
 
 > 🚀 **Cloud Fine-Tuning Guides & Colab Notebook:**
-> - [Open Directly in Google Colab (Notebook)](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/Tetrax_OCR_Colab_Training.ipynb)
-> - [Google Colab Step-by-Step Training Guide (Markdown)](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/README_COLAB.md)
-> - [RunPod Cloud GPU Step-by-Step Training Guide](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/README_RUNPOD.md)
+> - [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/TusharTemgire/Tetrax-OCR-itt/blob/main/Tetrax_OCR_Colab_Training.ipynb) **[Open Directly in Google Colab](https://colab.research.google.com/github/TusharTemgire/Tetrax-OCR-itt/blob/main/Tetrax_OCR_Colab_Training.ipynb)**
+> - [Google Colab Step-by-Step Training Guide (Markdown)](README_COLAB.md)
+> - [RunPod Cloud GPU Step-by-Step Training Guide](README_RUNPOD.md)
 
 ---
 
@@ -134,7 +134,7 @@ PaddleOCR's recognition engine (PP-OCRv4 / PP-OCRv5) uses CTC + Attention multi-
    git clone https://github.com/PaddlePaddle/PaddleOCR.git vendor/PaddleOCR
    cd vendor/PaddleOCR
    ```
-2. Run training with the pre-configured YAML config [`configs/rec_sarvam_indic.yml`](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/configs/rec_sarvam_indic.yml):
+2. Run training with the pre-configured YAML config [`configs/rec_sarvam_indic.yml`](configs/rec_sarvam_indic.yml):
    ```bash
    python tools/train.py \
      -c ../../configs/rec_sarvam_indic.yml \
