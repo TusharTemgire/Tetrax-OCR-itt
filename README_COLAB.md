@@ -30,13 +30,13 @@ from google.colab import drive
 drive.mount('/content/drive')
 ```
 
-Clone your Tetrax OCR repository into Colab (or open [`Tetrax_OCR_Colab_Training.ipynb`](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/Tetrax_OCR_Colab_Training.ipynb)):
+Clone your Tetrax OCR repository into Colab (or open [`Tetrax_OCR_Colab_Training.ipynb`](Tetrax_OCR_Colab_Training.ipynb)):
 ```bash
-!git clone https://github.com/TusharTemgire/tetrax-OCR-ITT.git /content/tetrax-ocr
+!git clone https://github.com/TusharTemgire/Tetrax-OCR-itt.git /content/tetrax-ocr
 %cd /content/tetrax-ocr
 ```
 
-*(Alternative without Git: Zip your local `tetrax-ocr-starter` folder, upload it to Google Drive, and unzip with `!unzip /content/drive/MyDrive/tetrax-ocr-starter.zip -d /content/tetrax-ocr`).*
+*(Alternative without Git: Zip your local repository folder, upload it to Google Drive, and unzip with `!unzip /content/drive/MyDrive/tetrax-ocr.zip -d /content/tetrax-ocr`).*
 
 ---
 
@@ -111,7 +111,7 @@ Download the official pretrained PP-OCRv4 / PP-OCRv5 multilingual recognition ch
 ```
 
 ### Step 5.3: Launch PaddleOCR Fine-Tuning
-Run training using the configuration prepared in [`configs/rec_sarvam_indic.yml`](file:///d:/tetrax-ocr-starter/tetrax-ocr-starter/configs/rec_sarvam_indic.yml):
+Run training using the configuration prepared in [`configs/rec_sarvam_indic.yml`](configs/rec_sarvam_indic.yml):
 
 ```bash
 !python tools/train.py \
