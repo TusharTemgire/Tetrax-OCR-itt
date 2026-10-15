@@ -78,7 +78,21 @@ def main():
     args = parser.parse_args()
 
     print(f"Loading '{args.dataset}' (split: {args.split}) directly from Hugging Face...")
+    from datasets import Image as HFImage
     ds = load_dataset(args.dataset, split=args.split)
+    ds = ds.cast_column("image", HFImage(decode=False))
+
+    def _is_valid_image(item):
+        img = item.get("image")
+        if isinstance(img, dict):
+            if img.get("bytes"):
+                return True
+            p = img.get("path")
+            return bool(p and os.path.exists(p))
+        return img is not None
+
+    ds = ds.filter(_is_valid_image)
+    ds = ds.cast_column("image", HFImage(decode=True))
     print(f"Total raw samples loaded: {len(ds)}")
 
     # Filter by target languages if specified

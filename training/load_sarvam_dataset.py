@@ -45,8 +45,12 @@ def main():
 
     print(f"Loading '{args.split}' split from 'sarvamai/indic-ocr-bench'...")
     try:
-        from datasets import load_dataset
+        import io
+        from PIL import Image as PILImage
+        from datasets import load_dataset, Image as HFImage
         ds = load_dataset("sarvamai/indic-ocr-bench", split=args.split)
+        # Disable eager decoding to prevent crashes on broken dataset rows (e.g. indic_ocr_bench_test_eng_5.png)
+        ds = ds.cast_column("image", HFImage(decode=False))
     except Exception as e:
         raise SystemExit(f"Failed to load dataset from Hugging Face: {e}")
 
@@ -77,10 +81,26 @@ def main():
         
         # Save image to disk if not already present
         if not image_path.exists():
-            pil_img = item["image"]
-            if pil_img.mode != "RGB":
-                pil_img = pil_img.convert("RGB")
-            pil_img.save(image_path)
+            img_entry = item.get("image")
+            pil_img = None
+            try:
+                if isinstance(img_entry, dict):
+                    raw_bytes = img_entry.get("bytes")
+                    raw_path = img_entry.get("path")
+                    if raw_bytes:
+                        pil_img = PILImage.open(io.BytesIO(raw_bytes))
+                    elif raw_path and os.path.exists(raw_path):
+                        pil_img = PILImage.open(raw_path)
+                elif hasattr(img_entry, "convert"):
+                    pil_img = img_entry
+                
+                if pil_img is None:
+                    continue
+                if pil_img.mode != "RGB":
+                    pil_img = pil_img.convert("RGB")
+                pil_img.save(image_path)
+            except Exception:
+                continue
 
         for c in gt_text:
             if c not in ("\n", "\r", "\t"):
